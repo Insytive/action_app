@@ -1,0 +1,85 @@
+{#
+/**
+ * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link          http://cakephp.org CakePHP(tm) Project
+ * @since         2.0.0
+ * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+#}
+{% set fields = Bake.filterFields(fields, schema, modelObject) %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center border-0">
+                <h3 class="w-75 float-left card-title m-0"><?= __('{{ action|humanize }} {{ singularHumanName }}') ?></h3>
+                <div class="dropdown dropleft text-right w-25 float-right">
+                    <button class="btn bg-gray-100" id="asaCtrlOpts" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="nav-icon i-Gear-2"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="asaCtrlOpts">
+{% if 'add' not in action %}
+                            <?= $this->Form->postLink(
+                            __('Delete'),
+                            ['action' => 'delete', ${{ singularVar }}->{{ primaryKey[0] }}],
+                            ['confirm' => __('Are you sure you want to delete # {0}?', ${{ singularVar }}->{{ primaryKey[0] }}), 'class' => 'dropdown-item text-mute']
+                            ) ?>
+{% endif %}
+                        <?= $this->Html->link(__('List {{ pluralHumanName }}'), ['action' => 'index'], ['class' => 'dropdown-item']) ?>
+                        {{- "\n" }}
+{%- set done = [] %}
+                    </div>
+                </div>
+            </div>
+
+            <?= $this->Form->create(${{ singularVar }}) ?>
+            <div class="card-body">
+                <div class="{{ pluralVar }} form content">
+                <?php
+{% for field in fields %}
+{%- if field not in primaryKey %}
+    {%- if keyFields[field] is defined %}
+        {%- set fieldData = Bake.columnData(field, schema) %}
+        {%- if fieldData.null %}
+                    echo $this->Form->control('{{ field }}', ['options' => ${{ keyFields[field] }}, 'empty' => true]);
+                    {{- "\n" }}
+        {%- else %}
+                    echo $this->Form->control('{{ field }}', ['options' => ${{ keyFields[field] }}]);
+                    {{- "\n" }}
+        {%- endif %}
+    {%- elseif field not in ['created', 'modified', 'updated'] %}
+        {%- set fieldData = Bake.columnData(field, schema) %}
+        {%- if fieldData.type in ['date', 'datetime', 'time'] and fieldData.null %}
+                    echo $this->Form->control('{{ field }}', ['empty' => true]);
+                    {{- "\n" }}
+        {%- else %}
+                    echo $this->Form->control('{{ field }}');
+                    {{- "\n" }}
+        {%- endif %}
+    {%- endif %}
+{%- endif %}
+{%- endfor %}
+
+{%- if associations.BelongsToMany is defined %}
+{%- for assocName, assocData in associations.BelongsToMany %}
+                    echo $this->Form->control('{{ assocData.property }}._ids', ['options' => ${{ assocData.variable }}]);
+                    {{- "\n" }}
+{%- endfor %}
+{% endif %}
+                ?>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-secondary" type="reset" data-dismiss="modal">Reset</button>
+                <button class="btn btn-primary ml-2" type="submit">Save</button>
+            </div>
+            <?= $this->Form->end() ?>
+        </div>
+    </div>
+</div>

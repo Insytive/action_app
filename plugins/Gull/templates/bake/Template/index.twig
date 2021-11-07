@@ -1,0 +1,102 @@
+{#
+/**
+ * CakePHP(tm) : Rapid Development Framework (http://cakephp.org)
+ * Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ *
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @copyright     Copyright (c) Cake Software Foundation, Inc. (http://cakefoundation.org)
+ * @link          http://cakephp.org CakePHP(tm) Project
+ * @since         2.0.0
+ * @license       http://www.opensource.org/licenses/mit-license.php MIT License
+ */
+#}
+<?php
+/**
+ * @var \{{ namespace }}\View\AppView $this
+ * @var \{{ entityClass }}[]|\Cake\Collection\CollectionInterface ${{ pluralVar }}
+ */
+
+$this->assign('title', __('{{ pluralHumanName }}'));
+?>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center border-0">
+                <h3 class="w-75 float-left card-title m-0"><?= __('{{ pluralHumanName }}') ?></h3>
+{% set fields = Bake.filterFields(fields, schema, modelObject, indexColumns, ['binary', 'text']) %}
+                <?= $this->Html->link(__('New {{ singularHumanName }}'),
+                    ['action' => 'add'],
+                    ['class' => 'btn btn-primary float-right']) ?>
+{% set done = [] %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+{% for field in fields %}
+                            <th><?= $this->Paginator->sort('{{ field }}') ?></th>
+{% endfor %}
+                            <th class="actions text-right" style="width:130px;">&vellip;</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach (${{ pluralVar }} as ${{ singularVar }}): ?>
+                            <tr>
+{% set pk = '$' ~ singularVar ~ '->' ~ primaryKey[0] %}
+{% for field in fields %}
+{% set isKey = false %}
+{% if associations.BelongsTo is defined %}
+{% for alias, details in associations.BelongsTo %}
+{% if field == details.foreignKey %}
+{% set isKey = true %}
+                                <td><?= ${{ singularVar }}->has('{{ details.property }}') ? $this->Html->link(${{ singularVar }}->{{ details.property }}->{{ details.displayField }}, ['controller' => '{{ details.controller }}', 'action' => 'view', ${{ singularVar }}->{{ details.property }}->{{ details.primaryKey[0] }}]) : '' ?></td>
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if isKey is not same as(true) %}
+{% set columnData = Bake.columnData(field, schema) %}
+{% if columnData.type not in ['integer', 'float', 'decimal', 'biginteger', 'smallinteger', 'tinyinteger'] %}
+                                <td>{% if displayField is same as field %}<?= $this->Html->link(h(${{ singularVar }}->{{ field }}), ['action' => 'view', {{ pk|raw }}]) ?>{% endif %}</td>
+{% else %}
+                                <td><?= $this->Number->format(${{ singularVar }}->{{ field }}) ?></td>
+{% endif %}
+{% endif %}
+{% endfor %}
+                                <td class="actions text-right">
+                                    <?= $this->Html->link('<i class="nav-icon i-Folder-Open-2 font-weight-bold"></i>', ['action' => 'view', {{ pk|raw }}], ['class'=>'btn btn-sm text-success mr-1', 'escape'=>false]) ?>
+                                    <?= $this->Html->link('<i class="nav-icon i-Pen-2 font-weight-bold"></i>', ['action' => 'edit', {{ pk|raw }}], ['class'=>'btn btn-sm mr-1', 'escape'=>false]) ?>
+                                    <?= $this->Form->postLink('<i class="nav-icon i-Close-Window font-weight-bold"></i>', ['action' => 'delete', {{ pk|raw }}], ['class'=>'btn btn-sm text-mute', 'escape'=>false, 'confirm' => __('Are you sure you want to delete # {0}?', {{ pk|raw }})]) ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div><!--/.card-body -->
+            <div class="card-footer">
+                <div class="paginator d-flex align-items-center">
+                    <div class="w-75">
+                        <nav aria-label="<?= __('{{ pluralHumanName }}') ?> navigation">
+                            <ul class="pagination">
+                                <?= $this->Paginator->first('«') ?>
+                                <?= $this->Paginator->prev('<') ?>
+                                <?= $this->Paginator->numbers() ?>
+                                <?= $this->Paginator->next(' >') ?>
+                                <?= $this->Paginator->last('»') ?>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="w-25">
+                        <p><?= $this->Paginator->counter(__('Displaying {{ '{{' }}start{{ '}}' }} - {{ '{{' }}end{{ '}}' }} of {{ '{{' }}count{{ '}}' }} | Page {{ '{{' }}page{{ '}}' }} of {{ '{{' }}pages{{ '}}' }}')) ?></p>
+                    </div>
+                </div>
+            </div><!--/.card-footer -->
+        </div>
+    </div>
+</div>
+
+
